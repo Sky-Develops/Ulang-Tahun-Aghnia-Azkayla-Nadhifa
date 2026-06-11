@@ -3,7 +3,8 @@ import type { GalleryItem, Profile, SiteSettings, Wish } from "@/types";
 export const defaultProfile: Profile = {
   name: "Aghnia Azkayla Nadhifa",
   age: 2,
-  birthDate: "2024-06-29",
+  birthDate: "2023-06-29",
+  displayDate: "2024-06-29",
   city: "Surabaya, Indonesia",
   bio: "Doa dari kalian yang aku tunggu..",
 };
