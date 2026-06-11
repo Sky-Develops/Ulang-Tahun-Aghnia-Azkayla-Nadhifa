@@ -59,7 +59,7 @@ export function WishForm({ defaultName = "", enabled = true }: { defaultName?: s
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Contoh: Tante Rani"
+            placeholder="Contoh: Mama Yola"
             disabled={!enabled}
             className="h-14 w-full rounded-2xl border border-white/40 bg-white/20 px-4 text-white outline-none placeholder:text-white/60 focus:border-ocean-yellow disabled:opacity-50"
           />
