@@ -50,9 +50,9 @@ export function WishForm({ defaultName = "", enabled = true }: { defaultName?: s
       <form onSubmit={submit} className="friendly-card space-y-3 p-4 text-white">
         <div>
           <h2 className="border-l-4 border-ocean-yellow pl-3 font-display text-2xl font-extrabold">
-            Kirim doa manis 💌
+            Kirim doa dan ucapan manis 💌
           </h2>
-          <p className="pl-4 text-xs font-medium text-white/75">Nama pengirim disimpan untuk admin, tapi tidak tampil di publik.</p>
+          <p className="pl-4 text-xs font-medium text-white/75">Nama pengirim akan kami private untuk menjaga privasi.</p>
         </div>
         <label className="block">
           <span className="mb-1 block text-sm font-bold text-ocean-yellow">Nama kamu</span>
@@ -65,7 +65,7 @@ export function WishForm({ defaultName = "", enabled = true }: { defaultName?: s
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm font-bold text-ocean-yellow">Doa untuk Kayla</span>
+          <span className="mb-1 block text-sm font-bold text-ocean-yellow">Ucapan / Doa untuk Kayla</span>
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
