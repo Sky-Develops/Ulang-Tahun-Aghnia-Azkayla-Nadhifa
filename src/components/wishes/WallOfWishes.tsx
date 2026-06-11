@@ -45,6 +45,9 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const canvasEl = canvas;
+    const ctxEl = ctx;
+    const wrapperEl = wrapper;
     let dpr = 1;
     let cw = 1000;
     let ch = 600;
@@ -85,8 +88,8 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
 
     function resize() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const rect = wrapper.getBoundingClientRect();
-      const w = Math.max(300, Math.round(rect.width || wrapper.clientWidth || 1000));
+      const rect = wrapperEl.getBoundingClientRect();
+      const w = Math.max(300, Math.round(rect.width || wrapperEl.clientWidth || 1000));
       const isMobile = w < 560;
       const isTablet = w >= 560 && w < 900;
       sceneScale = isMobile ? 0.66 : isTablet ? 0.82 : 1;
@@ -94,12 +97,12 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
       const minH = isMobile ? 380 : isTablet ? 470 : 560;
       const maxH = isMobile ? 560 : isTablet ? 650 : 760;
       const h = Math.max(minH, Math.min(Math.round(w * ratio), maxH));
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      canvas.style.width = "100%";
-      canvas.style.height = `${h}px`;
-      wrapper.style.height = `${h}px`;
-      wrapper.style.minHeight = `${h}px`;
+      canvasEl.width = Math.round(w * dpr);
+      canvasEl.height = Math.round(h * dpr);
+      canvasEl.style.width = "100%";
+      canvasEl.style.height = `${h}px`;
+      wrapperEl.style.height = `${h}px`;
+      wrapperEl.style.minHeight = `${h}px`;
       cw = w;
       ch = h;
     }
@@ -277,13 +280,13 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
       if (!msg) return;
       const fs = Math.max(7.5, Math.min(11, (msg.length < 30 ? 11 : 9.5) * Math.max(sceneScale, 0.78)));
       const maxW = (msg.length < 20 ? 70 : msg.length < 50 ? 90 : 120) * Math.max(sceneScale, 0.72);
-      ctx.font = `600 ${fs}px Inter,sans-serif`;
+      ctxEl.font = `600 ${fs}px Inter,sans-serif`;
       const words = msg.split(" ");
       const lines: string[] = [];
       let cur = "";
       words.forEach((word) => {
         const test = cur ? `${cur} ${word}` : word;
-        if (ctx.measureText(test).width > maxW * 1.5 && cur) {
+        if (ctxEl.measureText(test).width > maxW * 1.5 && cur) {
           lines.push(cur);
           cur = word;
         } else {
@@ -294,7 +297,7 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
       const lh = fs * 1.4;
       const r = Math.max(
         27 * sceneScale,
-        Math.max((lines.length * lh) / 1.6 + 10 * sceneScale, ctx.measureText(msg.slice(0, 20)).width / 1.4 + 12 * sceneScale),
+        Math.max((lines.length * lh) / 1.6 + 10 * sceneScale, ctxEl.measureText(msg.slice(0, 20)).width / 1.4 + 12 * sceneScale),
       );
       const maxR = cw < 560 ? 54 : cw < 900 ? 70 : 88;
       const activeLimit = cw < 560 ? 3 : cw < 900 ? 4 : 5;
@@ -628,25 +631,25 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
     }
 
     function loop() {
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, cw, ch);
-      drawBG(ctx);
-      drawAmb(ctx);
-      drawFish(ctx);
-      drawSubmarine(ctx);
-      drawDiver(ctx);
-      drawWishBub(ctx);
-      drawSnails(ctx);
-      drawShips(ctx);
-      drawBirds(ctx);
+      ctxEl.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctxEl.clearRect(0, 0, cw, ch);
+      drawBG(ctxEl);
+      drawAmb(ctxEl);
+      drawFish(ctxEl);
+      drawSubmarine(ctxEl);
+      drawDiver(ctxEl);
+      drawWishBub(ctxEl);
+      drawSnails(ctxEl);
+      drawShips(ctxEl);
+      drawBirds(ctxEl);
       t += 0.016;
       af = requestAnimationFrame(loop);
     }
 
     function handleMouseMove(e: MouseEvent) {
-      const rect = canvas.getBoundingClientRect();
-      const mx = ((e.clientX - rect.left) * canvas.width) / rect.width / dpr;
-      const my = ((e.clientY - rect.top) * canvas.height) / rect.height / dpr;
+      const rect = canvasEl.getBoundingClientRect();
+      const mx = ((e.clientX - rect.left) * canvasEl.width) / rect.width / dpr;
+      const my = ((e.clientY - rect.top) * canvasEl.height) / rect.height / dpr;
       let hovered: any = null;
       for (let i = wishBub.length - 1; i >= 0; i -= 1) {
         const b = wishBub[i];
@@ -680,7 +683,7 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
       loop();
     }
 
-    canvas.addEventListener("mousemove", handleMouseMove);
+    canvasEl.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("resize", init);
     init();
     const syncTimer = window.setInterval(syncSnails, 7000);
@@ -688,7 +691,7 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
     return () => {
       cancelAnimationFrame(af);
       window.clearInterval(syncTimer);
-      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvasEl.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", init);
     };
   }, [wishes, profilePhotoUrl]);

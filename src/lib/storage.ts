@@ -65,7 +65,9 @@ async function videoToGif(file: File, onProgress?: (progress: number) => void) {
 
     const data = await ffmpeg.readFile(outputName);
     const bytes = typeof data === "string" ? new TextEncoder().encode(data) : data;
-    return new File([bytes], `${safeName(file.name)}.gif`, { type: "image/gif" });
+    const gifBytes = new Uint8Array(bytes.byteLength);
+    gifBytes.set(bytes);
+    return new File([gifBytes.buffer], `${safeName(file.name)}.gif`, { type: "image/gif" });
   } finally {
     await Promise.allSettled([ffmpeg.deleteFile(inputName), ffmpeg.deleteFile(outputName)]);
     ffmpeg.terminate();
