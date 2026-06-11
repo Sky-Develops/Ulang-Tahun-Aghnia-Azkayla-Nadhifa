@@ -85,7 +85,7 @@ export default function HomePage() {
 
           <GalleryGrid items={gallery} />
           <WishForm defaultName={guestName} enabled={settings.formsEnabled} />
-          <WallOfWishes wishes={approvedWishes} profilePhotoUrl={profile.photoUrl} />
+          <WallOfWishes wishes={approvedWishes} />
 
           <footer className="pt-6 text-center">
             <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-white/20 text-2xl ring-1 ring-white/30">

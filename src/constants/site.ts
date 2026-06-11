@@ -1,15 +1,15 @@
 import type { GalleryItem, Profile, SiteSettings, Wish } from "@/types";
 
 export const defaultProfile: Profile = {
-  name: "Kayla",
+  name: "Aghnia Azkayla Nadhifa",
   age: 2,
-  birthDate: "2023-01-15",
+  birthDate: "2024-06-29",
   city: "Surabaya, Indonesia",
-  bio: "Baby Shark doo doo doo...",
+  bio: "Doa dari kalian yang aku tunggu..",
 };
 
 export const defaultSettings: SiteSettings = {
-  websiteTitle: "Kayla's 2nd Birthday",
+  websiteTitle: "Aghnia Azkayla Nadhifa's 2nd Birthday",
   musicUrl: "/audio/baby-shark.mp3",
   theme: "ocean",
   formsEnabled: true,

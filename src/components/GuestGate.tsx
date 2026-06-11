@@ -75,7 +75,7 @@ export function GuestGate() {
         <input
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Contoh: Bunda Nita"
+          placeholder="Contoh: Mama Yola"
           className="h-14 w-full rounded-2xl border border-white/40 bg-white/20 px-4 text-white outline-none placeholder:text-white/60 focus:border-ocean-yellow"
         />
       </label>
