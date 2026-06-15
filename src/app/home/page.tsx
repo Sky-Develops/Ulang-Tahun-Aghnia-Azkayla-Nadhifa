@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Camera, Heart, LockKeyhole, Sparkles } from "lucide-react";
+import { Camera, Heart, Sparkles } from "lucide-react";
 import { BirthdayInfo } from "@/components/BirthdayInfo";
 import { GalleryGrid } from "@/components/gallery/GalleryGrid";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
@@ -20,9 +20,16 @@ export default function HomePage() {
   const [gallery, setGallery] = useState<GalleryItem[]>(sampleGallery);
   const [wishes, setWishes] = useState<Wish[]>(sampleWishes);
   const [guestName, setGuestName] = useState("");
+  const [isAllowed, setIsAllowed] = useState(false);
 
   useEffect(() => {
-    setGuestName(window.localStorage.getItem("kayla_guest_name") ?? "");
+    const name = window.localStorage.getItem("kayla_guest_name") ?? "";
+    if (!name.trim()) {
+      window.location.replace("/");
+      return;
+    }
+    setGuestName(name);
+    setIsAllowed(true);
 
     const unsubscribers = [
       listenProfile(setProfile),
@@ -35,6 +42,8 @@ export default function HomePage() {
   }, []);
 
   const approvedWishes = useMemo(() => wishes.filter((wish) => wish.approved), [wishes]);
+
+  if (!isAllowed) return null;
 
   return (
     <Shell>
@@ -93,13 +102,6 @@ export default function HomePage() {
             </div>
             <p className="font-display text-lg font-bold text-white">Kayla&apos;s 2nd Birthday 🎂</p>
             <p className="text-xs font-medium text-white/70">Terima kasih sudah ikut merayakan hari spesial Kayla.</p>
-            <Link
-              href="/admin"
-              className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-5 py-3 text-sm font-bold text-white ring-1 ring-white/30"
-            >
-              <LockKeyhole size={16} />
-              Admin Panel
-            </Link>
           </footer>
         </div>
       </div>

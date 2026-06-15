@@ -79,12 +79,6 @@ export default function AdminPage() {
               <p className="text-sm text-white/65">Hanya admin yang bisa mengakses halaman ini.</p>
             </div>
             <input
-              type="email"
-              value={ADMIN_EMAIL}
-              readOnly
-              className="h-12 w-full rounded-2xl border border-ocean-aqua/30 bg-white/10 px-4 py-3 text-white/70 outline-none"
-            />
-            <input
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
