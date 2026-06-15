@@ -24,7 +24,7 @@ import { supabase } from "@/lib/supabase";
 import { defaultProfile, defaultSettings, sampleGallery, sampleWishes } from "@/constants/site";
 import type { GalleryItem, GalleryType, Guest, Profile, SiteSettings, Wish } from "@/types";
 
-const ADMIN_EMAIL = "tegarmi839@gmail.com";
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "";
 
 export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null);
