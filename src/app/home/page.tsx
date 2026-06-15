@@ -14,6 +14,32 @@ import { defaultProfile, defaultSettings, sampleGallery, sampleWishes, seaFriend
 import { listenGallery, listenProfile, listenSettings, listenWishes } from "@/lib/firestore";
 import type { GalleryItem, Profile, SiteSettings, Wish } from "@/types";
 
+const SESSION_DURATION = 5 * 60 * 1000; // 5 menit
+
+function clearSession() {
+  window.localStorage.removeItem("kayla_guest_name");
+  window.localStorage.removeItem("kayla_music_autoplay");
+  window.localStorage.removeItem("kayla_session_time");
+}
+
+function isSessionValid(): boolean {
+  const name = window.localStorage.getItem("kayla_guest_name") ?? "";
+  if (!name.trim()) return false;
+
+  const sessionTime = window.localStorage.getItem("kayla_session_time");
+  if (sessionTime) {
+    const elapsed = Date.now() - parseInt(sessionTime, 10);
+    if (elapsed > SESSION_DURATION) {
+      clearSession();
+      return false;
+    }
+  } else {
+    window.localStorage.setItem("kayla_session_time", Date.now().toString());
+  }
+
+  return true;
+}
+
 export default function HomePage() {
   const [profile, setProfile] = useState<Profile>(defaultProfile);
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
@@ -23,13 +49,28 @@ export default function HomePage() {
   const [isAllowed, setIsAllowed] = useState(false);
 
   useEffect(() => {
-    const name = window.localStorage.getItem("kayla_guest_name") ?? "";
-    if (!name.trim()) {
+    if (!isSessionValid()) {
       window.location.replace("/");
       return;
     }
+
+    const name = window.localStorage.getItem("kayla_guest_name") ?? "";
     setGuestName(name);
     setIsAllowed(true);
+
+    // Saat tab disembunyikan, catat timestamp
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        window.localStorage.setItem("kayla_session_time", Date.now().toString());
+      } else {
+        // Saat balik ke tab, cek apakah sudah expired
+        if (!isSessionValid()) {
+          window.location.replace("/");
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const unsubscribers = [
       listenProfile(setProfile),
@@ -38,7 +79,10 @@ export default function HomePage() {
       listenWishes(setWishes),
     ];
 
-    return () => unsubscribers.forEach((unsubscribe) => unsubscribe());
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      unsubscribers.forEach((unsubscribe) => unsubscribe());
+    };
   }, []);
 
   const approvedWishes = useMemo(() => wishes.filter((wish) => wish.approved), [wishes]);
