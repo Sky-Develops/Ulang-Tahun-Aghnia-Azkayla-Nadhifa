@@ -31,8 +31,8 @@ export function WishForm({ defaultName = "", enabled = true }: { defaultName?: s
       setThanksPopup(true);
       window.setTimeout(() => setConfetti(false), 5000);
       window.setTimeout(() => setThanksPopup(false), 5000);
-    } catch (error) {
-      setNotice("Doa belum terkirim. Cek koneksi atau policy Supabase.");
+    } catch (error: any) {
+      setNotice("Gagal mengirim doa: " + (error?.message || "Cek koneksi atau policy Supabase."));
     } finally {
       setLoading(false);
     }

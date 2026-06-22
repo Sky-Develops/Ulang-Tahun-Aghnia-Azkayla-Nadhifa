@@ -53,8 +53,12 @@ export default function DashboardPage() {
 
   const submitProfile = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await saveProfile(profile);
-    setNotice("Profile berhasil disimpan.");
+    try {
+      await saveProfile(profile);
+      setNotice("Profile berhasil disimpan.");
+    } catch (error: any) {
+      setNotice("Gagal menyimpan profile: " + (error?.message || "Kesalahan tidak diketahui"));
+    }
   };
 
   const uploadProfile = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,8 +73,8 @@ export default function DashboardPage() {
       setProfile(nextProfile);
       await saveProfile(nextProfile);
       setNotice("Foto profile berhasil diupload dan dikonversi ke WebP.");
-    } catch (error) {
-      setNotice("Upload foto profile gagal. Pastikan file berupa PNG, JPG, atau JPEG dan policy Storage Supabase sudah benar.");
+    } catch (error: any) {
+      setNotice("Upload foto gagal: " + (error?.message || "Pastikan policy Storage Supabase sudah benar."));
     } finally {
       event.target.value = "";
       setProfileUploadProgress(0);
@@ -79,8 +83,12 @@ export default function DashboardPage() {
 
   const submitSettings = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await saveSettings(settings);
-    setNotice("Pengaturan website berhasil disimpan.");
+    try {
+      await saveSettings(settings);
+      setNotice("Pengaturan website berhasil disimpan.");
+    } catch (error: any) {
+      setNotice("Gagal menyimpan pengaturan: " + (error?.message || "Kesalahan tidak diketahui"));
+    }
   };
 
   const upload = async (event: React.ChangeEvent<HTMLInputElement>, type: GalleryType) => {
@@ -98,8 +106,8 @@ export default function DashboardPage() {
         order: gallery.length,
       });
       setNotice(type === "photo" ? "Foto berhasil diupload sebagai WebP." : "Video berhasil dikonversi dan diupload sebagai GIF.");
-    } catch (error) {
-      setNotice("Upload gagal. Cek format file dan policy Storage Supabase.");
+    } catch (error: any) {
+      setNotice("Upload gagal: " + (error?.message || "Cek format file dan policy Storage Supabase."));
     } finally {
       event.target.value = "";
       setGalleryUploadProgress(0);

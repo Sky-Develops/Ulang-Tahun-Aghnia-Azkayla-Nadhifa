@@ -38,6 +38,7 @@ async function imageToWebp(file: File, maxSize = IMAGE_MAX_SIZE) {
 
 async function videoToGif(file: File, onProgress?: (progress: number) => void) {
   const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+  const { fetchFile, toBlobURL } = await import("@ffmpeg/util");
   const ffmpeg = new FFmpeg();
 
   ffmpeg.on("progress", ({ progress }) => {
@@ -45,7 +46,12 @@ async function videoToGif(file: File, onProgress?: (progress: number) => void) {
   });
 
   onProgress?.(5);
-  await ffmpeg.load();
+  
+  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+  });
 
   const inputName = `input.${file.name.split(".").pop() || "mp4"}`;
   const outputName = "output.gif";
