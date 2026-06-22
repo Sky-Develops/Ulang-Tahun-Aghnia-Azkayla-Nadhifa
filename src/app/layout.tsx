@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Baloo_2, Inter } from "next/font/google";
 import "react-photo-view/dist/react-photo-view.css";
 import "./globals.css";
+import { createClient } from "@supabase/supabase-js";
 
 const baloo = Baloo_2({
   subsets: ["latin"],
@@ -14,14 +15,13 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-import { createClient } from "@supabase/supabase-js";
+export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  // Menggunakan createClient standar karena kita tidak butuh auth untuk membaca tabel public
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
-  
+
   const { data } = await supabase.from("settings").select("icon_url").eq("id", "main").maybeSingle();
   const iconUrl = data?.icon_url || "/favicon.ico";
 
