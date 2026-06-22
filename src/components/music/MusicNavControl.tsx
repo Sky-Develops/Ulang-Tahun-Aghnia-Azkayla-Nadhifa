@@ -19,10 +19,7 @@ export function MusicNavControl({ musicUrl }: { musicUrl?: string }) {
     const shouldAutoplay = window.localStorage.getItem("kayla_music_autoplay") === "1";
     if (!shouldAutoplay) return;
 
-    audio
-      .play()
-      .then(() => setPlaying(true))
-      .catch(() => setPlaying(false));
+    audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
   }, [musicUrl, muted, volume]);
 
   const toggleMute = async () => {
@@ -50,7 +47,7 @@ export function MusicNavControl({ musicUrl }: { musicUrl?: string }) {
         type="button"
         onClick={toggleMute}
         disabled={!musicUrl}
-        className="grid h-8 w-8 place-items-center rounded-full bg-ocean-yellow text-ocean-deep disabled:opacity-45"
+        className="grid h-8 w-8 place-items-center rounded-full bg-ocean-yellow text-white disabled:opacity-45"
         aria-label={muted ? "Nyalakan musik" : "Matikan musik"}
       >
         {!musicUrl || muted ? <VolumeX size={17} /> : volume < 0.45 ? <Volume1 size={17} /> : <Volume2 size={17} />}

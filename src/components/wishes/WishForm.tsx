@@ -46,18 +46,27 @@ export function WishForm({
       return;
     }
 
+    const lastSentStr = window.localStorage.getItem("kayla_last_wish_time");
+    if (lastSentStr) {
+      const lastSent = parseInt(lastSentStr, 10);
+      if (Date.now() - lastSent < 60000) {
+        setNotice("Tunggu 1 menit sebelum mengirim doa lagi ya! 😊");
+        return;
+      }
+    }
+
     setLoading(true);
     setNotice("");
     try {
       await createWish({ name: name.trim(), message: message.trim() });
 
-      // Simpan ke riwayat ucapan lokal di HP
       const newWish: MyWish = {
         id: `local-${Date.now()}`,
         message: message.trim(),
         createdAt: new Date().toISOString(),
       };
       saveWishToLocal(newWish);
+      window.localStorage.setItem("kayla_last_wish_time", Date.now().toString());
       onWishSent?.(newWish);
 
       setMessage("");
@@ -113,7 +122,7 @@ export function WishForm({
         <button
           type="submit"
           disabled={loading || !enabled}
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-ocean-pink to-ocean-coral font-display text-lg font-extrabold text-white shadow-glow disabled:opacity-60"
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-ocean-yellow to-ocean-coral font-display text-lg font-extrabold text-white shadow-glow disabled:opacity-60"
         >
           <Send size={18} />
           {loading ? "Mengirim..." : "Kirim doa"}

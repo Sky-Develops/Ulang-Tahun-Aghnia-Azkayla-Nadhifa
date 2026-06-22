@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ImagePlus, LogOut, Save, Trash2, Upload, Video, Wand2 } from "lucide-react";
 import { Shell } from "@/components/layout/Shell";
@@ -32,6 +33,8 @@ export default function DashboardPage() {
   const [galleryUploadProgress, setGalleryUploadProgress] = useState(0);
   const [iconUploadProgress, setIconUploadProgress] = useState(0);
   const [notice, setNotice] = useState("");
+  const [galleryLimit, setGalleryLimit] = useState(10);
+  const [wishesLimit, setWishesLimit] = useState(10);
 
   useEffect(() => {
     if (!notice || profileUploadProgress || galleryUploadProgress || iconUploadProgress) return;
@@ -173,8 +176,7 @@ export default function DashboardPage() {
             <AdminInput label="Bio" value={profile.bio} onChange={(value) => setProfile({ ...profile, bio: value })} />
             {profile.photoUrl ? (
               <div className="flex items-center gap-3 rounded-2xl bg-white/10 p-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={profile.photoUrl} alt={profile.name} className="h-14 w-14 rounded-2xl object-cover" />
+                <Image src={profile.photoUrl} alt={profile.name} width={56} height={56} className="h-14 w-14 rounded-2xl object-cover" />
                 <p className="text-xs font-semibold text-white/70">Foto profile aktif sudah dioptimalkan ke WebP.</p>
               </div>
             ) : null}
@@ -199,7 +201,7 @@ export default function DashboardPage() {
             </div>
             {galleryUploadProgress ? <div className="h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-ocean-yellow" style={{ width: `${galleryUploadProgress}%` }} /></div> : null}
             <div className="max-h-56 space-y-2 overflow-y-auto">
-              {gallery.map((item) => (
+              {gallery.slice(0, galleryLimit).map((item) => (
                 <div key={item.id} className="flex items-center justify-between rounded-2xl bg-white/10 px-3 py-2 text-sm">
                   <span className="truncate">{item.type === "photo" ? "📷" : "🎥"} {item.title}</span>
                   <button onClick={() => deleteGalleryItem(item.id)} className="text-ocean-coral" aria-label={`Hapus ${item.title}`}>
@@ -207,6 +209,9 @@ export default function DashboardPage() {
                   </button>
                 </div>
               ))}
+              {gallery.length > galleryLimit && (
+                <button type="button" onClick={() => setGalleryLimit((l) => l + 10)} className="w-full rounded-2xl bg-white/5 py-2 text-xs font-bold text-ocean-yellow hover:bg-white/10">Tampilkan Lebih Banyak...</button>
+              )}
             </div>
           </section>
 
@@ -217,7 +222,7 @@ export default function DashboardPage() {
               <p className="rounded-2xl bg-ocean-orange/20 p-3 text-center text-sm font-bold">{wishes.length - approvedCount} Pending</p>
             </div>
             <div className="max-h-80 space-y-2 overflow-y-auto">
-              {wishes.map((wish) => (
+              {wishes.slice(0, wishesLimit).map((wish) => (
                 <article key={wish.id} className="rounded-2xl bg-white/10 p-3 text-sm">
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -244,6 +249,9 @@ export default function DashboardPage() {
                   </div>
                 </article>
               ))}
+              {wishes.length > wishesLimit && (
+                <button type="button" onClick={() => setWishesLimit((l) => l + 10)} className="w-full rounded-2xl bg-white/5 py-2 text-xs font-bold text-ocean-yellow hover:bg-white/10">Tampilkan Lebih Banyak...</button>
+              )}
             </div>
           </section>
 
@@ -262,8 +270,7 @@ export default function DashboardPage() {
             </label>
             {settings.iconUrl ? (
               <div className="flex items-center gap-3 rounded-2xl bg-white/10 p-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={settings.iconUrl} alt="Icon" className="h-10 w-10 rounded-xl object-cover" />
+                <Image src={settings.iconUrl} alt="Icon" width={40} height={40} className="h-10 w-10 rounded-xl object-cover" />
                 <p className="text-xs font-semibold text-white/70">Ikon website aktif.</p>
               </div>
             ) : null}
@@ -339,3 +346,5 @@ function UploadButton({
     </label>
   );
 }
+
+

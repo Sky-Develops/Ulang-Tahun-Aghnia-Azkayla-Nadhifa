@@ -1,13 +1,14 @@
 "use client";
 
 import { Camera, PlayCircle } from "lucide-react";
+import Image from "next/image";
 import { PhotoProvider, PhotoView } from "react-photo-view";
 import type { GalleryItem } from "@/types";
 
 const tileColors = [
-  "bg-ocean-yellow text-ocean-deep",
+  "bg-ocean-yellow text-white",
   "bg-ocean-aqua text-ocean-deep",
-  "bg-ocean-pink text-white",
+  "bg-ocean-yellow text-white",
   "bg-ocean-coral text-white",
   "bg-ocean-green text-ocean-deep",
   "bg-ocean-orange text-white",
@@ -30,12 +31,7 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
 
             const mediaContent = item.url ? (
               <div className="relative h-full w-full">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.url}
-                  alt={item.title}
-                  className="h-full w-full object-cover"
-                />
+                <Image src={item.url} alt={item.title} fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover" />
                 {isGif && (
                   <div className="absolute bottom-1 right-1 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5">
                     <PlayCircle size={10} className="text-white" />
@@ -51,19 +47,14 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
             );
 
             const tile = (
-              <div
-                className={`${tileColors[index % tileColors.length]} grid aspect-square place-items-center overflow-hidden rounded-2xl text-center shadow-lg`}
-              >
+              <div className={`${tileColors[index % tileColors.length]} grid aspect-square place-items-center overflow-hidden rounded-2xl text-center shadow-lg`}>
                 {mediaContent}
               </div>
             );
 
-            // Hanya foto dengan URL yang bisa dibuka fullscreen
             return item.type === "photo" && item.url ? (
               <PhotoView key={item.id} src={item.url}>
-                <button type="button" className="block w-full">
-                  {tile}
-                </button>
+                <button type="button" className="block w-full">{tile}</button>
               </PhotoView>
             ) : (
               <div key={item.id}>{tile}</div>

@@ -116,7 +116,7 @@ export default function HomePage() {
               <p className="text-xs font-semibold text-white/80">Momen lucu Kayla</p>
             </a>
             <a href="#wish-form" className="friendly-card p-4 text-white">
-              <Heart className="mb-3 text-ocean-pink" />
+              <Heart className="mb-3 text-ocean-yellow" />
               <p className="font-display text-2xl font-extrabold">{approvedWishes.length}</p>
               <p className="text-xs font-semibold text-white/80">Doa terkumpul</p>
             </a>
@@ -132,7 +132,7 @@ export default function HomePage() {
           {/* Ucapan Doa Saya */}
           {myWishes.length > 0 && (
             <section className="space-y-2">
-              <h2 className="border-l-4 border-ocean-pink pl-3 font-display text-xl font-extrabold text-white">
+              <h2 className="border-l-4 border-ocean-yellow pl-3 font-display text-xl font-extrabold text-white">
                 Ucapan doamu 💌
               </h2>
               <p className="pl-4 text-xs font-medium text-white/65">Doa yang sudah kamu kirimkan dari perangkat ini.</p>
@@ -178,3 +178,4 @@ export default function HomePage() {
     </Shell>
   );
 }
+

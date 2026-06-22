@@ -1,4 +1,5 @@
 import type { Profile } from "@/types";
+import Image from "next/image";
 import { calculateAge, formatBirthdayDate } from "@/lib/utils";
 
 export function BirthdayInfo({
@@ -21,8 +22,7 @@ export function BirthdayInfo({
         <div className="flex items-center gap-4">
           <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-ocean-yellow bg-white text-4xl">
             {profile.photoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={profile.photoUrl} alt={profile.name} className="h-full w-full object-cover" />
+              <Image src={profile.photoUrl} alt={profile.name} width={80} height={80} className="h-full w-full object-cover" />
             ) : (
               "👶"
             )}
@@ -43,3 +43,4 @@ export function BirthdayInfo({
     </section>
   );
 }
+

@@ -40,7 +40,6 @@ export function GuestGate() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Jika sudah pernah daftar dan tidak minta ganti, langsung redirect
   if (saved && !showChangeForm) {
     return (
       <motion.div
@@ -48,23 +47,23 @@ export function GuestGate() {
         animate={{ opacity: 1, y: 0 }}
         className="friendly-card space-y-4 p-5 text-center text-white"
       >
-        <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-ocean-yellow text-4xl text-ocean-deep shadow-glow">
-          🎂
+        <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-ocean-yellow text-4xl text-white shadow-glow">
+          {"🎂"}
         </div>
-        <p className="text-lg font-bold">🦈 🐠 🫧 🌊</p>
+        <p className="text-lg font-bold">{"🦈 🐠 🫧 🌊"}</p>
         <h1 className="font-display text-4xl font-extrabold leading-none text-white drop-shadow">
           Pesta Kayla
           <span className="block text-2xl text-ocean-yellow">ulang tahun ke-2</span>
         </h1>
         <div className="rounded-2xl bg-white/10 p-3 text-sm">
-          <p className="font-bold text-ocean-yellow">Selamat datang kembali! 👋</p>
+          <p className="font-bold text-ocean-yellow">{"Selamat datang kembali! 👋"}</p>
           <p className="mt-1 text-white/80">
             Hai <span className="font-bold text-white">{saved.name}</span>!
           </p>
         </div>
         <a
           href="/home"
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ocean-yellow font-display text-lg font-extrabold text-ocean-deep shadow-glow"
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ocean-yellow font-display text-lg font-extrabold text-white shadow-glow"
         >
           Masuk ke pesta
           <ArrowRight size={18} />
@@ -90,22 +89,28 @@ export function GuestGate() {
       return;
     }
 
+    const lastRegStr = window.localStorage.getItem("kayla_last_reg_time");
+    if (lastRegStr) {
+      const lastReg = parseInt(lastRegStr, 10);
+      if (Date.now() - lastReg < 30000) {
+        setError("Tunggu sebentar sebelum mengirim data lagi ya! 😊");
+        return;
+      }
+    }
+
     setLoading(true);
     saveGuest(name.trim(), city.trim(), relation.trim());
+    window.localStorage.setItem("kayla_last_reg_time", Date.now().toString());
 
     try {
       await Promise.race([
-        createGuest({
-          name: name.trim(),
-          city: city.trim(),
-          relation: relation.trim(),
-        }),
+        createGuest({ name: name.trim(), city: city.trim(), relation: relation.trim() }),
         new Promise((_, reject) => {
           window.setTimeout(() => reject(new Error("Timeout")), 8000);
         }),
       ]);
     } catch {
-      // Tetap lanjut meski DB gagal, data sudah tersimpan di HP
+      // Tetap lanjut meski DB gagal
     } finally {
       window.location.href = "/home";
     }
@@ -119,10 +124,10 @@ export function GuestGate() {
       className="friendly-card space-y-4 p-5 text-white"
     >
       <div className="text-center">
-        <div className="mx-auto mb-3 grid h-20 w-20 place-items-center rounded-full bg-ocean-yellow text-4xl text-ocean-deep shadow-glow">
-          🎂
+        <div className="mx-auto mb-3 grid h-20 w-20 place-items-center rounded-full bg-ocean-yellow text-4xl text-white shadow-glow">
+          {"🎂"}
         </div>
-        <p className="text-lg font-bold">🦈 🐠 🫧 🌊</p>
+        <p className="text-lg font-bold">{"🦈 🐠 🫧 🌊"}</p>
         <h1 className="font-display text-4xl font-extrabold leading-none text-white drop-shadow">
           Pesta Kayla
           <span className="block text-2xl text-ocean-yellow">ulang tahun ke-2</span>
@@ -132,7 +137,7 @@ export function GuestGate() {
         </p>
       </div>
 
-      <div className="h-1 rounded-full bg-gradient-to-r from-ocean-yellow via-ocean-pink to-ocean-aqua" />
+      <div className="h-1 rounded-full bg-gradient-to-r from-ocean-yellow via-ocean-coral to-ocean-aqua" />
 
       <label className="block">
         <span className="mb-1 flex items-center gap-2 text-sm font-bold text-ocean-yellow">
@@ -178,13 +183,13 @@ export function GuestGate() {
       <button
         type="submit"
         disabled={loading}
-        className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ocean-yellow font-display text-lg font-extrabold text-ocean-deep shadow-glow disabled:opacity-60"
+        className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ocean-yellow font-display text-lg font-extrabold text-white shadow-glow disabled:opacity-60"
       >
         {loading ? "Menyimpan..." : "Masuk ke pesta"}
         <ArrowRight size={18} />
       </button>
 
-      <p className="text-center text-xs font-medium text-white/70">Kayla 2nd Birthday · 2026</p>
+      <p className="text-center text-xs font-medium text-white/70">{"Kayla 2nd Birthday · 2026"}</p>
     </motion.form>
   );
 }

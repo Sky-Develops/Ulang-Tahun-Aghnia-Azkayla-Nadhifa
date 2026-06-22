@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-
 import { KeyRound } from "lucide-react";
 import { Shell } from "@/components/layout/Shell";
 import { TopBar } from "@/components/layout/TopBar";
 import { supabase } from "@/lib/supabase";
-
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -35,7 +33,7 @@ export default function LoginPage() {
       <TopBar title="Admin Panel" showAdmin={false} />
       <div className="flex min-h-[calc(100vh-5rem)] items-center">
         <div className="ocean-panel w-full space-y-4 rounded-3xl p-5 text-center">
-          <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-ocean-yellow text-ocean-deep">
+          <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-ocean-yellow text-white">
             <KeyRound size={30} />
           </div>
           <div>

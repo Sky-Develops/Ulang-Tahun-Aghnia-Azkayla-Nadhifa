@@ -10,13 +10,11 @@ export function MusicPlayer({ musicUrl }: { musicUrl?: string }) {
 
   const toggle = async () => {
     if (!audioRef.current || !musicUrl) return;
-
     if (playing) {
       audioRef.current.pause();
       setPlaying(false);
       return;
     }
-
     await audioRef.current.play();
     setPlaying(true);
   };
@@ -32,7 +30,7 @@ export function MusicPlayer({ musicUrl }: { musicUrl?: string }) {
           <button
             type="button"
             onClick={toggle}
-            className="grid h-11 w-11 place-items-center rounded-full bg-ocean-yellow text-ocean-deep"
+            className="grid h-11 w-11 place-items-center rounded-full bg-ocean-yellow text-white"
             aria-label={playing ? "Pause music" : "Play music"}
           >
             {playing ? <Pause size={20} /> : <Play size={20} />}
