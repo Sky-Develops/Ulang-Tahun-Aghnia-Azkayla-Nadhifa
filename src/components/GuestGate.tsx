@@ -1,18 +1,85 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, MapPin, UserRound, UsersRound } from "lucide-react";
+import { ArrowRight, MapPin, RefreshCw, UserRound, UsersRound } from "lucide-react";
 import { createGuest } from "@/lib/firestore";
 
+const STORAGE_KEYS = {
+  name: "kayla_guest_name",
+  city: "kayla_guest_city",
+  relation: "kayla_guest_relation",
+  registered: "kayla_registered",
+};
+
+function getSavedGuest() {
+  if (typeof window === "undefined") return null;
+  const registered = window.localStorage.getItem(STORAGE_KEYS.registered);
+  if (registered !== "1") return null;
+  return {
+    name: window.localStorage.getItem(STORAGE_KEYS.name) ?? "",
+    city: window.localStorage.getItem(STORAGE_KEYS.city) ?? "",
+    relation: window.localStorage.getItem(STORAGE_KEYS.relation) ?? "",
+  };
+}
+
+function saveGuest(name: string, city: string, relation: string) {
+  window.localStorage.setItem(STORAGE_KEYS.name, name);
+  window.localStorage.setItem(STORAGE_KEYS.city, city);
+  window.localStorage.setItem(STORAGE_KEYS.relation, relation);
+  window.localStorage.setItem(STORAGE_KEYS.registered, "1");
+  window.localStorage.setItem("kayla_music_autoplay", "1");
+}
+
 export function GuestGate() {
-  const router = useRouter();
-  const [name, setName] = useState("");
-  const [city, setCity] = useState("");
-  const [relation, setRelation] = useState("");
+  const saved = getSavedGuest();
+  const [showChangeForm, setShowChangeForm] = useState(false);
+  const [name, setName] = useState(saved?.name ?? "");
+  const [city, setCity] = useState(saved?.city ?? "");
+  const [relation, setRelation] = useState(saved?.relation ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Jika sudah pernah daftar dan tidak minta ganti, langsung redirect
+  if (saved && !showChangeForm) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="friendly-card space-y-4 p-5 text-center text-white"
+      >
+        <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-ocean-yellow text-4xl text-ocean-deep shadow-glow">
+          🎂
+        </div>
+        <p className="text-lg font-bold">🦈 🐠 🫧 🌊</p>
+        <h1 className="font-display text-4xl font-extrabold leading-none text-white drop-shadow">
+          Pesta Kayla
+          <span className="block text-2xl text-ocean-yellow">ulang tahun ke-2</span>
+        </h1>
+        <div className="rounded-2xl bg-white/10 p-3 text-sm">
+          <p className="font-bold text-ocean-yellow">Selamat datang kembali! 👋</p>
+          <p className="mt-1 text-white/80">
+            Hai <span className="font-bold text-white">{saved.name}</span>!
+          </p>
+        </div>
+        <a
+          href="/home"
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ocean-yellow font-display text-lg font-extrabold text-ocean-deep shadow-glow"
+        >
+          Masuk ke pesta
+          <ArrowRight size={18} />
+        </a>
+        <button
+          type="button"
+          onClick={() => setShowChangeForm(true)}
+          className="flex w-full items-center justify-center gap-1.5 text-xs font-medium text-white/50 hover:text-white/80"
+        >
+          <RefreshCw size={12} />
+          Bukan {saved.name}? Ganti identitas
+        </button>
+      </motion.div>
+    );
+  }
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -24,10 +91,7 @@ export function GuestGate() {
     }
 
     setLoading(true);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("kayla_guest_name", name.trim());
-      window.localStorage.setItem("kayla_music_autoplay", "1");
-    }
+    saveGuest(name.trim(), city.trim(), relation.trim());
 
     try {
       await Promise.race([
@@ -37,12 +101,13 @@ export function GuestGate() {
           relation: relation.trim(),
         }),
         new Promise((_, reject) => {
-          window.setTimeout(() => reject(new Error("Supabase timeout")), 8000);
+          window.setTimeout(() => reject(new Error("Timeout")), 8000);
         }),
       ]);
-      router.push("/home");
-    } catch (err) {
-      router.push("/home");
+    } catch {
+      // Tetap lanjut meski DB gagal, data sudah tersimpan di HP
+    } finally {
+      window.location.href = "/home";
     }
   };
 
@@ -62,7 +127,9 @@ export function GuestGate() {
           Pesta Kayla
           <span className="block text-2xl text-ocean-yellow">ulang tahun ke-2</span>
         </h1>
-        <p className="mt-2 text-sm font-medium text-white/80">Masuk dulu, lalu musik dan pesta lautnya mulai.</p>
+        <p className="mt-2 text-sm font-medium text-white/80">
+          {showChangeForm ? "Masukkan data kamu yang baru." : "Masuk dulu, lalu musik dan pesta lautnya mulai."}
+        </p>
       </div>
 
       <div className="h-1 rounded-full bg-gradient-to-r from-ocean-yellow via-ocean-pink to-ocean-aqua" />
@@ -113,7 +180,7 @@ export function GuestGate() {
         disabled={loading}
         className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ocean-yellow font-display text-lg font-extrabold text-ocean-deep shadow-glow disabled:opacity-60"
       >
-        {loading ? "Membuka pesta..." : "Masuk ke pesta"}
+        {loading ? "Menyimpan..." : "Masuk ke pesta"}
         <ArrowRight size={18} />
       </button>
 

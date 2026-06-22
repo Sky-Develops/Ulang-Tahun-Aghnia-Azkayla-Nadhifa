@@ -14,30 +14,29 @@ import { defaultProfile, defaultSettings, sampleGallery, sampleWishes, seaFriend
 import { listenGallery, listenProfile, listenSettings, listenWishes } from "@/lib/firestore";
 import type { GalleryItem, Profile, SiteSettings, Wish } from "@/types";
 
-const SESSION_DURATION = 5 * 60 * 1000; // 5 menit
-
-function clearSession() {
-  window.localStorage.removeItem("kayla_guest_name");
-  window.localStorage.removeItem("kayla_music_autoplay");
-  window.localStorage.removeItem("kayla_session_time");
+interface MyWish {
+  id: string;
+  message: string;
+  createdAt: string;
 }
 
-function isSessionValid(): boolean {
-  const name = window.localStorage.getItem("kayla_guest_name") ?? "";
-  if (!name.trim()) return false;
+function getGuestName(): string {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem("kayla_guest_name") ?? "";
+}
 
-  const sessionTime = window.localStorage.getItem("kayla_session_time");
-  if (sessionTime) {
-    const elapsed = Date.now() - parseInt(sessionTime, 10);
-    if (elapsed > SESSION_DURATION) {
-      clearSession();
-      return false;
-    }
-  } else {
-    window.localStorage.setItem("kayla_session_time", Date.now().toString());
+function isRegistered(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem("kayla_registered") === "1";
+}
+
+function getMyWishes(): MyWish[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(window.localStorage.getItem("kayla_my_wishes") ?? "[]");
+  } catch {
+    return [];
   }
-
-  return true;
 }
 
 export default function HomePage() {
@@ -46,31 +45,19 @@ export default function HomePage() {
   const [gallery, setGallery] = useState<GalleryItem[]>(sampleGallery);
   const [wishes, setWishes] = useState<Wish[]>(sampleWishes);
   const [guestName, setGuestName] = useState("");
+  const [myWishes, setMyWishes] = useState<MyWish[]>([]);
   const [isAllowed, setIsAllowed] = useState(false);
 
   useEffect(() => {
-    if (!isSessionValid()) {
+    // Cek registrasi permanen — tidak ada timeout
+    if (!isRegistered()) {
       window.location.replace("/");
       return;
     }
 
-    const name = window.localStorage.getItem("kayla_guest_name") ?? "";
-    setGuestName(name);
+    setGuestName(getGuestName());
+    setMyWishes(getMyWishes());
     setIsAllowed(true);
-
-    // Saat tab disembunyikan, catat timestamp
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        window.localStorage.setItem("kayla_session_time", Date.now().toString());
-      } else {
-        // Saat balik ke tab, cek apakah sudah expired
-        if (!isSessionValid()) {
-          window.location.replace("/");
-        }
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const unsubscribers = [
       listenProfile(setProfile),
@@ -80,7 +67,6 @@ export default function HomePage() {
     ];
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
       unsubscribers.forEach((unsubscribe) => unsubscribe());
     };
   }, []);
@@ -137,7 +123,38 @@ export default function HomePage() {
           </section>
 
           <GalleryGrid items={gallery} />
-          <WishForm defaultName={guestName} enabled={settings.formsEnabled} />
+          <WishForm
+            defaultName={guestName}
+            enabled={settings.formsEnabled}
+            onWishSent={(wish) => setMyWishes((prev) => [wish, ...prev])}
+          />
+
+          {/* Ucapan Doa Saya */}
+          {myWishes.length > 0 && (
+            <section className="space-y-2">
+              <h2 className="border-l-4 border-ocean-pink pl-3 font-display text-xl font-extrabold text-white">
+                Ucapan doamu 💌
+              </h2>
+              <p className="pl-4 text-xs font-medium text-white/65">Doa yang sudah kamu kirimkan dari perangkat ini.</p>
+              <div className="space-y-2">
+                {myWishes.map((wish) => (
+                  <div key={wish.id} className="rounded-2xl bg-white/10 p-3 text-sm">
+                    <p className="text-white/90">{wish.message}</p>
+                    <p className="mt-1 text-[10px] text-white/40">
+                      {new Date(wish.createdAt).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           <WallOfWishes wishes={approvedWishes} />
 
           <footer className="pt-6 text-center">

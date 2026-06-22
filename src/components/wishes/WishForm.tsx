@@ -5,7 +5,31 @@ import Confetti from "react-confetti";
 import { Send } from "lucide-react";
 import { createWish } from "@/lib/firestore";
 
-export function WishForm({ defaultName = "", enabled = true }: { defaultName?: string; enabled?: boolean }) {
+interface MyWish {
+  id: string;
+  message: string;
+  createdAt: string;
+}
+
+function saveWishToLocal(wish: MyWish) {
+  try {
+    const existing: MyWish[] = JSON.parse(window.localStorage.getItem("kayla_my_wishes") ?? "[]");
+    existing.unshift(wish);
+    window.localStorage.setItem("kayla_my_wishes", JSON.stringify(existing.slice(0, 20)));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+export function WishForm({
+  defaultName = "",
+  enabled = true,
+  onWishSent,
+}: {
+  defaultName?: string;
+  enabled?: boolean;
+  onWishSent?: (wish: MyWish) => void;
+}) {
   const [name, setName] = useState(defaultName);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,6 +50,16 @@ export function WishForm({ defaultName = "", enabled = true }: { defaultName?: s
     setNotice("");
     try {
       await createWish({ name: name.trim(), message: message.trim() });
+
+      // Simpan ke riwayat ucapan lokal di HP
+      const newWish: MyWish = {
+        id: `local-${Date.now()}`,
+        message: message.trim(),
+        createdAt: new Date().toISOString(),
+      };
+      saveWishToLocal(newWish);
+      onWishSent?.(newWish);
+
       setMessage("");
       setConfetti(true);
       setThanksPopup(true);

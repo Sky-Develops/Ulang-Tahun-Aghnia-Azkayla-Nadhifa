@@ -32,6 +32,7 @@ create table if not exists public.settings (
   music_url text not null,
   theme text not null default 'ocean',
   forms_enabled boolean not null default true,
+  icon_url text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
