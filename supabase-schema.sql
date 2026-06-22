@@ -1,5 +1,19 @@
 create extension if not exists pgcrypto;
 
+create table if not exists public.user_roles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text unique not null,
+  role text not null default 'user'
+);
+
+alter table public.user_roles enable row level security;
+
+drop policy if exists "Users can read own role" on public.user_roles;
+create policy "Users can read own role"
+on public.user_roles for select
+to authenticated
+using (id = auth.uid());
+
 create table if not exists public.profiles (
   id text primary key,
   name text not null,
@@ -120,35 +134,35 @@ drop policy if exists "Admin can manage profiles" on public.profiles;
 create policy "Admin can manage profiles"
 on public.profiles for all
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com')
-with check ((select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com');
+using (exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin'))
+with check (exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin'));
 
 drop policy if exists "Admin can manage settings" on public.settings;
 create policy "Admin can manage settings"
 on public.settings for all
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com')
-with check ((select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com');
+using (exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin'))
+with check (exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin'));
 
 drop policy if exists "Admin can manage gallery" on public.gallery;
 create policy "Admin can manage gallery"
 on public.gallery for all
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com')
-with check ((select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com');
+using (exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin'))
+with check (exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin'));
 
 drop policy if exists "Admin can manage wishes" on public.wishes;
 create policy "Admin can manage wishes"
 on public.wishes for all
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com')
-with check ((select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com');
+using (exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin'))
+with check (exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin'));
 
 drop policy if exists "Admin can read guests" on public.guests;
 create policy "Admin can read guests"
 on public.guests for select
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com');
+using (exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin'));
 
 insert into public.profiles (id, name, age, birth_date, city, bio)
 values ('main', 'Kayla', 2, '2023-01-15', 'Surabaya, Indonesia', 'Baby Shark doo doo doo...')
@@ -160,6 +174,13 @@ on conflict (id) do nothing;
 
 do $$
 begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'user_roles'
+  ) then
+    alter publication supabase_realtime add table public.user_roles;
+  end if;
+
   if not exists (
     select 1 from pg_publication_tables
     where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'profiles'
@@ -212,7 +233,7 @@ on storage.objects for insert
 to authenticated
 with check (
   bucket_id = 'media'
-  and (select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com'
+  and exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin')
 );
 
 drop policy if exists "Admin can update media" on storage.objects;
@@ -221,11 +242,11 @@ on storage.objects for update
 to authenticated
 using (
   bucket_id = 'media'
-  and (select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com'
+  and exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin')
 )
 with check (
   bucket_id = 'media'
-  and (select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com'
+  and exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin')
 );
 
 drop policy if exists "Admin can delete media" on storage.objects;
@@ -234,5 +255,5 @@ on storage.objects for delete
 to authenticated
 using (
   bucket_id = 'media'
-  and (select auth.jwt() ->> 'email') = 'tegarmi839@gmail.com'
+  and exists (select 1 from public.user_roles where id = auth.uid() and role = 'admin')
 );

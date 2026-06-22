@@ -2,10 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import type { User } from "@supabase/supabase-js";
-import { ImagePlus, KeyRound, LogOut, Save, Trash2, Upload, Video, Wand2 } from "lucide-react";
+import { ImagePlus, LogOut, Save, Trash2, Upload, Video, Wand2 } from "lucide-react";
 import { Shell } from "@/components/layout/Shell";
-import { TopBar } from "@/components/layout/TopBar";
 import {
   createGalleryItem,
   deleteGalleryItem,
@@ -24,81 +22,7 @@ import { supabase } from "@/lib/supabase";
 import { defaultProfile, defaultSettings, sampleGallery, sampleWishes } from "@/constants/site";
 import type { GalleryItem, GalleryType, Guest, Profile, SiteSettings, Wish } from "@/types";
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "";
-
-export default function AdminPage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [password, setPassword] = useState("");
-  const [authMessage, setAuthMessage] = useState("");
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      const nextUser = data.user;
-      if (nextUser?.email === ADMIN_EMAIL) setUser(nextUser);
-    });
-
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      const nextUser = session?.user ?? null;
-      if (nextUser && nextUser.email !== ADMIN_EMAIL) {
-        setAuthMessage("Akun ini bukan admin website.");
-        supabase.auth.signOut();
-        setUser(null);
-        return;
-      }
-      setUser(nextUser);
-    });
-
-    return () => data.subscription.unsubscribe();
-  }, []);
-
-  const login = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setAuthMessage("");
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: ADMIN_EMAIL,
-        password,
-      });
-      if (error) throw error;
-    } catch (error) {
-      setAuthMessage("Login gagal. Pastikan akun admin sudah dibuat di Supabase Authentication.");
-    }
-  };
-
-  if (!user) {
-    return (
-      <Shell>
-        <TopBar title="Admin Panel" showAdmin={false} />
-        <div className="flex min-h-[calc(100vh-5rem)] items-center">
-          <form onSubmit={login} className="ocean-panel w-full space-y-4 rounded-3xl p-5 text-center">
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-ocean-yellow text-ocean-deep">
-              <KeyRound size={30} />
-            </div>
-            <div>
-              <h1 className="font-display text-2xl font-extrabold">Admin Access</h1>
-              <p className="text-sm text-white/65">Hanya admin yang bisa mengakses halaman ini.</p>
-            </div>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Password Admin"
-              className="h-12 w-full rounded-2xl border border-ocean-aqua/30 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/45 focus:border-ocean-yellow"
-            />
-            {authMessage ? <p className="rounded-2xl bg-ocean-coral/20 p-3 text-sm">{authMessage}</p> : null}
-            <button className="h-14 w-full rounded-full bg-gradient-to-r from-ocean-turquoise to-ocean-mid font-display text-lg font-extrabold text-white shadow-glow">
-              🦈 Login Admin
-            </button>
-          </form>
-        </div>
-      </Shell>
-    );
-  }
-
-  return <AdminDashboard />;
-}
-
-function AdminDashboard() {
+export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile>(defaultProfile);
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [gallery, setGallery] = useState<GalleryItem[]>(sampleGallery);
@@ -191,7 +115,7 @@ function AdminDashboard() {
           </Link>
           <h1 className="font-display text-lg font-bold">⚙️ Admin Panel</h1>
           <button
-            onClick={() => supabase.auth.signOut()}
+            onClick={() => supabase.auth.signOut().then(() => window.location.href = "/login")}
             className="grid h-10 w-10 place-items-center rounded-full bg-ocean-coral/25 text-ocean-coral ring-1 ring-ocean-coral/40"
             aria-label="Logout"
           >
