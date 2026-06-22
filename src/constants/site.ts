@@ -14,6 +14,7 @@ export const defaultSettings: SiteSettings = {
   musicUrl: "/audio/baby-shark.mp3",
   theme: "ocean",
   formsEnabled: true,
+  iconUrl: "",
 };
 
 export const sampleWishes: Wish[] = [

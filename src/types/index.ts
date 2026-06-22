@@ -41,4 +41,5 @@ export interface SiteSettings {
   musicUrl: string;
   theme: "ocean";
   formsEnabled: boolean;
+  iconUrl?: string;
 }

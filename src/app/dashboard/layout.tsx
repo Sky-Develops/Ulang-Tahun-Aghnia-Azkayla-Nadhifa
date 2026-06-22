@@ -12,6 +12,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
         getAll() {
           return cookieStore.getAll();
         },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Bisa diabaikan jika dipanggil dari Server Component.
+            // Middleware akan me-refresh session jika expired.
+          }
+        },
       },
     }
   );

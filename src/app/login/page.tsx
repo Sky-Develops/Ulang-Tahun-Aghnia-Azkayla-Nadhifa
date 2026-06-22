@@ -1,32 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { KeyRound } from "lucide-react";
 import { Shell } from "@/components/layout/Shell";
 import { TopBar } from "@/components/layout/TopBar";
 import { supabase } from "@/lib/supabase";
 
+
 export default function LoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        router.push("/dashboard");
-      }
-    });
-
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        router.push("/dashboard");
-      }
-    });
-
-    return () => data.subscription.unsubscribe();
-  }, [router]);
 
   const loginWithGoogle = async () => {
     try {

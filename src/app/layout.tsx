@@ -14,10 +14,26 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  title: "Kayla's 2nd Birthday",
-  description: "Website ulang tahun interaktif Kayla dengan tema Baby Shark dan ocean.",
-};
+import { createClient } from "@supabase/supabase-js";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  // Menggunakan createClient standar karena kita tidak butuh auth untuk membaca tabel public
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  
+  const { data } = await supabase.from("settings").select("icon_url").eq("id", "main").maybeSingle();
+  const iconUrl = data?.icon_url || "/favicon.ico";
+
+  return {
+    title: "Kayla's 2nd Birthday",
+    description: "Website ulang tahun interaktif Kayla dengan tema Baby Shark dan ocean.",
+    icons: {
+      icon: iconUrl,
+      apple: iconUrl,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",

@@ -17,7 +17,7 @@ import {
   saveSettings,
   updateWish,
 } from "@/lib/firestore";
-import { uploadGalleryFile, uploadProfilePhoto } from "@/lib/storage";
+import { uploadGalleryFile, uploadProfilePhoto, uploadSiteIconFile } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
 import { defaultProfile, defaultSettings, sampleGallery, sampleWishes } from "@/constants/site";
 import type { GalleryItem, GalleryType, Guest, Profile, SiteSettings, Wish } from "@/types";
@@ -30,13 +30,14 @@ export default function DashboardPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [profileUploadProgress, setProfileUploadProgress] = useState(0);
   const [galleryUploadProgress, setGalleryUploadProgress] = useState(0);
+  const [iconUploadProgress, setIconUploadProgress] = useState(0);
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
-    if (!notice || profileUploadProgress || galleryUploadProgress) return;
+    if (!notice || profileUploadProgress || galleryUploadProgress || iconUploadProgress) return;
     const timer = window.setTimeout(() => setNotice(""), 5000);
     return () => window.clearTimeout(timer);
-  }, [notice, profileUploadProgress, galleryUploadProgress]);
+  }, [notice, profileUploadProgress, galleryUploadProgress, iconUploadProgress]);
 
   useEffect(() => {
     const unsubscribers = [
@@ -88,6 +89,26 @@ export default function DashboardPage() {
       setNotice("Pengaturan website berhasil disimpan.");
     } catch (error: any) {
       setNotice("Gagal menyimpan pengaturan: " + (error?.message || "Kesalahan tidak diketahui"));
+    }
+  };
+
+  const uploadSiteIcon = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIconUploadProgress(1);
+    setNotice("Mengoptimalkan ikon ke PNG 256x256...");
+    try {
+      const iconUrl = await uploadSiteIconFile(file, setIconUploadProgress);
+      const nextSettings = { ...settings, iconUrl };
+      setSettings(nextSettings);
+      await saveSettings(nextSettings);
+      setNotice("Ikon website berhasil diupload.");
+    } catch (error: any) {
+      setNotice("Upload ikon gagal: " + (error?.message || "Kesalahan tidak diketahui"));
+    } finally {
+      event.target.value = "";
+      setIconUploadProgress(0);
     }
   };
 
@@ -239,6 +260,20 @@ export default function DashboardPage() {
                 className="h-5 w-5 accent-ocean-yellow"
               />
             </label>
+            {settings.iconUrl ? (
+              <div className="flex items-center gap-3 rounded-2xl bg-white/10 p-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={settings.iconUrl} alt="Icon" className="h-10 w-10 rounded-xl object-cover" />
+                <p className="text-xs font-semibold text-white/70">Ikon website aktif.</p>
+              </div>
+            ) : null}
+            <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-ocean-mid font-bold text-white">
+              <Upload size={16} />
+              <ImagePlus size={18} />
+              <span className="text-sm">Upload Ikon Website</span>
+              <input type="file" accept="image/*" className="hidden" onChange={uploadSiteIcon} />
+            </label>
+            {iconUploadProgress ? <div className="h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-ocean-yellow" style={{ width: `${iconUploadProgress}%` }} /></div> : null}
             <button className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ocean-mid font-bold text-white">
               <Wand2 size={18} />
               Simpan Pengaturan

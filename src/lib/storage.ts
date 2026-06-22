@@ -105,3 +105,28 @@ export async function uploadGalleryFile(file: File, type: GalleryType, onProgres
   const folder = type === "photo" ? "photo" : "gif";
   return uploadFile(optimized, `gallery/${folder}/${Date.now()}-${safeName(file.name)}.${extension}`, onProgress, type === "photo" ? 0 : 70, type === "photo" ? 100 : 30);
 }
+
+async function imageToPngIcon(file: File, maxSize = 256) {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas tidak tersedia.");
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((result) => (result ? resolve(result) : reject(new Error("Konversi PNG gagal."))), "image/png");
+  });
+
+  return new File([blob], `${safeName(file.name)}.png`, { type: "image/png" });
+}
+
+export async function uploadSiteIconFile(file: File, onProgress?: (progress: number) => void) {
+  const png = await imageToPngIcon(file);
+  return uploadFile(png, `settings/icon-${Date.now()}.png`, onProgress);
+}

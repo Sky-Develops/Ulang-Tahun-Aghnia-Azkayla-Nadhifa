@@ -23,6 +23,7 @@ function mapSettings(row: any): SiteSettings {
     musicUrl: row?.music_url ?? defaultSettings.musicUrl,
     theme: "ocean",
     formsEnabled: row?.forms_enabled ?? defaultSettings.formsEnabled,
+    iconUrl: row?.icon_url ?? defaultSettings.iconUrl,
   };
 }
 
@@ -185,6 +186,7 @@ export async function saveSettings(settings: Partial<SiteSettings>) {
     music_url: next.musicUrl,
     theme: "ocean",
     forms_enabled: next.formsEnabled,
+    icon_url: next.iconUrl,
   });
   if (error) throw error;
 }
