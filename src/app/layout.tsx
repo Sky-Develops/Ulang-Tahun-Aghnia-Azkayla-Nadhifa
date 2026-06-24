@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Baloo_2, Inter } from "next/font/google";
-import "react-photo-view/dist/react-photo-view.css";
+
 import "./globals.css";
 import { createClient } from "@supabase/supabase-js";
 

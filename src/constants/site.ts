@@ -4,7 +4,7 @@ export const defaultProfile: Profile = {
   name: "Aghnia Azkayla Nadhifa",
   age: 2,
   birthDate: "2023-06-29",
-  displayDate: "2024-06-29",
+
   city: "Surabaya, Indonesia",
   bio: "Doa dari kalian yang aku tunggu..",
 };

@@ -6,16 +6,24 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function calculateAge(birthDate: string) {
-  const birth = new Date(birthDate);
-  const now = new Date();
-  let age = now.getFullYear() - birth.getFullYear();
-  const monthDelta = now.getMonth() - birth.getMonth();
+  if (!birthDate) return 0;
 
-  if (monthDelta < 0 || (monthDelta === 0 && now.getDate() < birth.getDate())) {
-    age -= 1;
+  try {
+    const birthYear = parseInt(birthDate.substring(0, 4), 10);
+    if (isNaN(birthYear)) return 0;
+
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Jakarta",
+      year: "numeric",
+    });
+
+    const parts = formatter.formatToParts(new Date());
+    const nowYear = parseInt(parts.find((p) => p.type === "year")?.value || "0", 10);
+
+    return Math.max(nowYear - birthYear, 0);
+  } catch (error) {
+    return 0;
   }
-
-  return Math.max(age, 0);
 }
 
 export function formatBirthdayDate(date: string) {

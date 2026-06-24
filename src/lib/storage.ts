@@ -100,10 +100,9 @@ export async function uploadProfilePhoto(file: File, onProgress?: (progress: num
 }
 
 export async function uploadGalleryFile(file: File, type: GalleryType, onProgress?: (progress: number) => void) {
-  const optimized = type === "photo" ? await imageToWebp(file) : await videoToGif(file, onProgress);
-  const extension = type === "photo" ? "webp" : "gif";
-  const folder = type === "photo" ? "photo" : "gif";
-  return uploadFile(optimized, `gallery/${folder}/${Date.now()}-${safeName(file.name)}.${extension}`, onProgress, type === "photo" ? 0 : 70, type === "photo" ? 100 : 30);
+  const extension = file.name.split(".").pop() || (type === "photo" ? "jpg" : "mp4");
+  const folder = type === "photo" ? "photo" : "video";
+  return uploadFile(file, `gallery/${folder}/${Date.now()}-${safeName(file.name)}.${extension}`, onProgress);
 }
 
 async function imageToPngIcon(file: File, maxSize = 256) {

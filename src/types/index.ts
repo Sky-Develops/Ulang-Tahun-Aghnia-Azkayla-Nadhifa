@@ -4,7 +4,7 @@ export interface Profile {
   name: string;
   age: number;
   birthDate: string;
-  displayDate?: string;
+
   city: string;
   bio: string;
   photoUrl?: string;

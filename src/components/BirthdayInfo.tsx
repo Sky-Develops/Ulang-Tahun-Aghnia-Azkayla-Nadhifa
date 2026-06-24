@@ -11,7 +11,7 @@ export function BirthdayInfo({
   guestName: string;
   wishCount: number;
 }) {
-  const age = calculateAge(profile.birthDate) || profile.age;
+  const age = profile.birthDate ? calculateAge(profile.birthDate) : profile.age;
 
   return (
     <section id="profile" className="friendly-card p-4 text-white">
@@ -31,7 +31,7 @@ export function BirthdayInfo({
             <h2 className="font-display text-2xl font-extrabold text-ocean-yellow drop-shadow">
               {profile.name} ✨
             </h2>
-            <p className="text-sm font-semibold">🎂 {formatBirthdayDate(profile.displayDate || profile.birthDate)}</p>
+            <p className="text-sm font-semibold">🎂 {formatBirthdayDate(profile.birthDate)}</p>
             <p className="font-bold text-ocean-yellow">🎉 {age} tahun hari ini</p>
             <p className="text-sm font-medium text-white/80">📍 {profile.city}</p>
           </div>

@@ -120,7 +120,7 @@ export default function DashboardPage() {
     if (!file) return;
 
     setGalleryUploadProgress(1);
-    setNotice(type === "photo" ? "Mengoptimalkan foto ke WebP..." : "Mengonversi video ke GIF...");
+    setNotice(type === "photo" ? "Mengupload foto..." : "Mengupload video...");
     try {
       const url = await uploadGalleryFile(file, type, setGalleryUploadProgress);
       await createGalleryItem({
@@ -129,7 +129,7 @@ export default function DashboardPage() {
         title: file.name.replace(/\.[^.]+$/, ""),
         order: gallery.length,
       });
-      setNotice(type === "photo" ? "Foto berhasil diupload sebagai WebP." : "Video berhasil dikonversi dan diupload sebagai GIF.");
+      setNotice(type === "photo" ? "Foto berhasil diupload." : "Video berhasil diupload.");
     } catch (error: any) {
       setNotice("Upload gagal: " + (error?.message || "Cek format file dan policy Storage Supabase."));
     } finally {

@@ -1,8 +1,8 @@
 "use client";
 
-import { Camera, PlayCircle } from "lucide-react";
+import { useState, useRef } from "react";
+import { Camera, PlayCircle, X } from "lucide-react";
 import Image from "next/image";
-import { PhotoProvider, PhotoView } from "react-photo-view";
 import type { GalleryItem } from "@/types";
 
 const tileColors = [
@@ -15,6 +15,23 @@ const tileColors = [
 ];
 
 export function GalleryGrid({ items }: { items: GalleryItem[] }) {
+  const [activeMedia, setActiveMedia] = useState<{ url: string; type: GalleryItem["type"] } | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleClose = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.removeAttribute("src");
+      videoRef.current.load();
+    }
+    setActiveMedia(null);
+  };
+
+  const isVideoFormat = (url: string) => {
+    const clean = url.split("?")[0].toLowerCase();
+    return clean.endsWith(".mp4") || clean.endsWith(".webm");
+  };
+
   return (
     <section id="gallery" className="space-y-3">
       <div>
@@ -23,19 +40,24 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
         </h2>
         <p className="pl-4 text-xs font-medium text-white/75">Tap foto untuk lihat lebih besar.</p>
       </div>
-      <PhotoProvider>
-        <div className="friendly-card grid grid-cols-3 gap-3 p-3">
+      <div className="friendly-card grid grid-cols-3 gap-3 p-3">
           {items.map((item, index) => {
             const Icon = item.type === "photo" ? Camera : PlayCircle;
-            const isGif = item.type === "video" && item.url;
-
+            const actualIsVideo = item.url ? isVideoFormat(item.url) : false;
+            
             const mediaContent = item.url ? (
               <div className="relative h-full w-full">
-                <Image src={item.url} alt={item.title} fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover" />
-                {isGif && (
-                  <div className="absolute bottom-1 right-1 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5">
+                {actualIsVideo ? (
+                  <video src={item.url} className="absolute inset-0 h-full w-full object-cover pointer-events-none" muted loop playsInline autoPlay />
+                ) : (
+                  <div className="absolute inset-0 h-full w-full pointer-events-none">
+                    <Image src={item.url} unoptimized={item.url.split("?")[0].toLowerCase().endsWith(".gif")} alt={item.title} fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover" />
+                  </div>
+                )}
+                {item.type === "video" && (
+                  <div className="absolute bottom-1 right-1 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 pointer-events-none">
                     <PlayCircle size={10} className="text-white" />
-                    <span className="text-[9px] font-extrabold text-white">GIF</span>
+                    <span className="text-[9px] font-extrabold text-white">VIDEO</span>
                   </div>
                 )}
               </div>
@@ -52,16 +74,45 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
               </div>
             );
 
-            return item.type === "photo" && item.url ? (
-              <PhotoView key={item.id} src={item.url}>
-                <button type="button" className="block w-full">{tile}</button>
-              </PhotoView>
+            return item.url ? (
+              <button key={item.id} type="button" className="block w-full h-full text-left" onClick={() => setActiveMedia({ url: item.url, type: item.type })}>{tile}</button>
             ) : (
               <div key={item.id}>{tile}</div>
             );
           })}
         </div>
-      </PhotoProvider>
+
+      {activeMedia && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.85)] p-4" onClick={handleClose}>
+          <div 
+            className="relative flex max-w-[90vw] max-h-[85vh] items-center justify-center rounded-[20px] border-4 border-ocean-yellow bg-black shadow-[0_0_20px_rgba(255,215,0,0.4)] overflow-hidden" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              type="button" 
+              className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-full bg-white text-ocean-yellow shadow-md hover:bg-white/90 transition-colors" 
+              onClick={handleClose}
+            >
+              <X size={20} className="stroke-[3]" />
+            </button>
+            {isVideoFormat(activeMedia.url) ? (
+              <video 
+                ref={videoRef}
+                src={activeMedia.url} 
+                className="max-h-[85vh] max-w-[90vw] rounded-[16px] object-contain" 
+                autoPlay 
+                playsInline 
+              />
+            ) : (
+              <img 
+                src={activeMedia.url} 
+                alt="Gallery view" 
+                className="max-h-[85vh] max-w-[90vw] rounded-[16px] object-contain" 
+              />
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
