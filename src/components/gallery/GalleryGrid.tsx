@@ -51,7 +51,11 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
                   <video src={item.url} className="absolute inset-0 h-full w-full object-cover pointer-events-none" muted loop playsInline autoPlay />
                 ) : (
                   <div className="absolute inset-0 h-full w-full pointer-events-none">
-                    <Image src={item.url} unoptimized={item.url.split("?")[0].toLowerCase().endsWith(".gif")} alt={item.title} fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover" />
+                    {item.url.split("?")[0].toLowerCase().endsWith(".gif") ? (
+                      <img src={item.url} alt={item.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <Image src={item.url} alt={item.title} fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover" />
+                    )}
                   </div>
                 )}
                 {item.type === "video" && (
@@ -106,7 +110,7 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
             ) : (
               <img 
                 src={activeMedia.url} 
-                alt="Gallery view" 
+                alt="" 
                 className="max-h-[85vh] max-w-[90vw] rounded-[16px] object-contain" 
               />
             )}
