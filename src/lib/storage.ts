@@ -16,7 +16,7 @@ function safeName(name: string) {
     .slice(0, 48) || "upload";
 }
 
-async function imageToWebp(file: File, maxSize = IMAGE_MAX_SIZE) {
+async function imageToWebp(file: File, maxSize = IMAGE_MAX_SIZE, quality = WEBP_QUALITY) {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
   const width = Math.max(1, Math.round(bitmap.width * scale));
@@ -30,7 +30,7 @@ async function imageToWebp(file: File, maxSize = IMAGE_MAX_SIZE) {
   bitmap.close();
 
   const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((result) => (result ? resolve(result) : reject(new Error("Konversi WebP gagal."))), "image/webp", WEBP_QUALITY);
+    canvas.toBlob((result) => (result ? resolve(result) : reject(new Error("Konversi WebP gagal."))), "image/webp", quality);
   });
 
   return new File([blob], `${safeName(file.name)}.webp`, { type: "image/webp" });
@@ -61,9 +61,9 @@ async function videoToGif(file: File, onProgress?: (progress: number) => void) {
       "-i",
       inputName,
       "-t",
-      "6",
+      "8",
       "-vf",
-      "fps=8,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=96[p];[s1][p]paletteuse=dither=bayer",
+      "fps=6,scale=360:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=64[p];[s1][p]paletteuse=dither=bayer",
       "-loop",
       "0",
       outputName,
@@ -99,10 +99,45 @@ export async function uploadProfilePhoto(file: File, onProgress?: (progress: num
   return uploadFile(webp, `profile/main-${Date.now()}.webp`, onProgress);
 }
 
-export async function uploadGalleryFile(file: File, type: GalleryType, onProgress?: (progress: number) => void) {
-  const extension = file.name.split(".").pop() || (type === "photo" ? "jpg" : "mp4");
-  const folder = type === "photo" ? "photo" : "video";
-  return uploadFile(file, `gallery/${folder}/${Date.now()}-${safeName(file.name)}.${extension}`, onProgress);
+export async function uploadGalleryFile(
+  file: File,
+  type: GalleryType,
+  onProgress?: (progress: number) => void
+) {
+  if (type === "photo") {
+    // Convert photo to WebP with max 1200px and 0.78 quality
+    onProgress?.(5);
+    const webp = await imageToWebp(file, 1200, 0.78);
+    onProgress?.(40);
+    return uploadFile(
+      webp,
+      `gallery/photo/${Date.now()}-${safeName(file.name)}.webp`,
+      onProgress,
+      40,
+      60
+    );
+  }
+
+  if (type === "video") {
+    // Convert video to GIF using existing videoToGif()
+    // videoToGif already handles its own progress (5 → 68)
+    const gif = await videoToGif(file, onProgress);
+    // Upload GIF with progress from 70 → 100
+    return uploadFile(
+      gif,
+      `gallery/gif/${Date.now()}-${safeName(file.name)}.gif`,
+      onProgress,
+      70,
+      30
+    );
+  }
+
+  // Fallback (should not reach here)
+  return uploadFile(
+    file,
+    `gallery/other/${Date.now()}-${safeName(file.name)}`,
+    onProgress
+  );
 }
 
 async function imageToPngIcon(file: File, maxSize = 256) {
