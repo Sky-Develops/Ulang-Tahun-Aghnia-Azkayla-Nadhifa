@@ -38,6 +38,35 @@ export function MusicNavControl({ musicUrl }: { musicUrl?: string }) {
     audio.muted = muted;
   }, [muted, volume]);
 
+  // Pause music when gallery opens, resume when it closes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleGalleryOpen = () => {
+      if (!audio.paused) {
+        audio.pause();
+        setPlaying(false);
+      }
+    };
+
+    const handleGalleryClose = () => {
+      if (audio.paused && !muted) {
+        audio.play()
+          .then(() => setPlaying(true))
+          .catch(() => {});
+      }
+    };
+
+    window.addEventListener("gallery:open", handleGalleryOpen);
+    window.addEventListener("gallery:close", handleGalleryClose);
+
+    return () => {
+      window.removeEventListener("gallery:open", handleGalleryOpen);
+      window.removeEventListener("gallery:close", handleGalleryClose);
+    };
+  }, [muted]);
+
   const [showPlayPrompt, setShowPlayPrompt] = useState(false);
 
   const handleManualPlay = async () => {

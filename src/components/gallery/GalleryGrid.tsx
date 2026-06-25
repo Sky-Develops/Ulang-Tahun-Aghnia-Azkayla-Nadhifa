@@ -60,7 +60,13 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
       videoRef.current.removeAttribute("src");
       videoRef.current.load();
     }
+    window.dispatchEvent(new CustomEvent("gallery:close"));
     setActiveMedia(null);
+  };
+
+  const handleOpen = (media: { url: string; type: GalleryItem["type"] }) => {
+    window.dispatchEvent(new CustomEvent("gallery:open"));
+    setActiveMedia(media);
   };
 
   const isVideoFormat = (url: string) => {
@@ -123,7 +129,7 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
             );
 
             return item.url ? (
-              <button key={item.id} type="button" className="block w-full h-full text-left" onClick={() => setActiveMedia({ url: item.url, type: item.type })}>{tile}</button>
+              <button key={item.id} type="button" className="block w-full h-full text-left" onClick={() => handleOpen({ url: item.url, type: item.type })}>{tile}</button>
             ) : (
               <div key={item.id}>{tile}</div>
             );
