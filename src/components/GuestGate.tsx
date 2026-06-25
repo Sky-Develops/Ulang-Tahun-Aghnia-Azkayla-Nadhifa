@@ -5,6 +5,15 @@ import { motion } from "framer-motion";
 import { ArrowRight, MapPin, RefreshCw, UserRound, UsersRound } from "lucide-react";
 import { createGuest } from "@/lib/firestore";
 
+// Unlocks audio playback for later autoplay
+const unlockAudio = () => {
+  const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+  if (AudioCtx) {
+    const ctx = new AudioCtx();
+    void ctx.resume();
+  }
+};
+
 const STORAGE_KEYS = {
   name: "kayla_guest_name",
   city: "kayla_guest_city",
@@ -64,6 +73,7 @@ export function GuestGate() {
         <a
           href="/home"
           className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ocean-yellow font-display text-lg font-extrabold text-white shadow-glow"
+          onClick={unlockAudio}
         >
           Masuk ke pesta
           <ArrowRight size={18} />
@@ -112,6 +122,8 @@ export function GuestGate() {
     } catch {
       // Tetap lanjut meski DB gagal
     } finally {
+      // Unlock audio before navigation to ensure autoplay works later
+      unlockAudio();
       window.location.href = "/home";
     }
   };

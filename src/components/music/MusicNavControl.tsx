@@ -19,8 +19,25 @@ export function MusicNavControl({ musicUrl }: { musicUrl?: string }) {
     const shouldAutoplay = window.localStorage.getItem("kayla_music_autoplay") === "1";
     if (!shouldAutoplay) return;
 
-    audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+    audio.play()
+      .then(() => setPlaying(true))
+      .catch(() => {
+        setPlaying(false);
+        setShowPlayPrompt(true);
+      });
   }, [musicUrl, muted, volume]);
+
+  const [showPlayPrompt, setShowPlayPrompt] = useState(false);
+
+  const handleManualPlay = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    try {
+      await audio.play();
+      setPlaying(true);
+      setShowPlayPrompt(false);
+    } catch (_) {}
+  };
 
   const toggleMute = async () => {
     const audio = audioRef.current;
@@ -72,6 +89,14 @@ export function MusicNavControl({ musicUrl }: { musicUrl?: string }) {
         className="w-16 accent-ocean-yellow disabled:opacity-45"
       />
       {musicUrl ? <audio ref={audioRef} src={musicUrl} loop preload="none" /> : null}
+      {showPlayPrompt && (
+        <button
+          onClick={handleManualPlay}
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-full bg-ocean-yellow px-4 py-2 text-sm font-bold text-white shadow-glow"
+        >
+          🎵 Tap untuk musik
+        </button>
+      )}
     </div>
   );
 }
