@@ -5,12 +5,13 @@ import { motion } from "framer-motion";
 import { ArrowRight, MapPin, RefreshCw, UserRound, UsersRound } from "lucide-react";
 import { createGuest } from "@/lib/firestore";
 
-// Unlocks audio playback for later autoplay
+// Unlocks audio playback policy and sets the autoplay flag
 const unlockAudio = () => {
+  window.localStorage.setItem("kayla_music_autoplay", "1");
   const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
   if (AudioCtx) {
     const ctx = new AudioCtx();
-    void ctx.resume();
+    ctx.resume().then(() => ctx.close()).catch(() => {});
   }
 };
 
@@ -73,7 +74,9 @@ export function GuestGate() {
         <a
           href="/home"
           className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ocean-yellow font-display text-lg font-extrabold text-white shadow-glow"
-          onClick={unlockAudio}
+          onClick={() => {
+            unlockAudio();
+          }}
         >
           Masuk ke pesta
           <ArrowRight size={18} />

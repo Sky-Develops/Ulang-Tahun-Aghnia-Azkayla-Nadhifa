@@ -9,23 +9,34 @@ export function MusicNavControl({ musicUrl }: { musicUrl?: string }) {
   const [volume, setVolume] = useState(0.55);
   const [playing, setPlaying] = useState(false);
 
+  // Autoplay on mount — only re-runs when musicUrl changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !musicUrl) return;
 
-    audio.volume = volume;
-    audio.muted = muted;
-
     const shouldAutoplay = window.localStorage.getItem("kayla_music_autoplay") === "1";
     if (!shouldAutoplay) return;
 
-    audio.play()
-      .then(() => setPlaying(true))
-      .catch(() => {
-        setPlaying(false);
-        setShowPlayPrompt(true);
-      });
-  }, [musicUrl, muted, volume]);
+    // 300ms delay lets the AudioContext settle after page navigation
+    const timer = setTimeout(() => {
+      audio.play()
+        .then(() => setPlaying(true))
+        .catch(() => {
+          setPlaying(false);
+          setShowPlayPrompt(true);
+        });
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [musicUrl]); // ← intentionally excludes muted/volume
+
+  // Keep volume and mute state in sync without triggering autoplay
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = volume;
+    audio.muted = muted;
+  }, [muted, volume]);
 
   const [showPlayPrompt, setShowPlayPrompt] = useState(false);
 
