@@ -65,7 +65,7 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
 
   const isVideoFormat = (url: string) => {
     const clean = url.split("?")[0].toLowerCase();
-    return clean.endsWith(".mp4") || clean.endsWith(".webm");
+    return clean.endsWith(".mp4") || clean.endsWith(".webm") || clean.includes("/video/");
   };
 
   return (
@@ -83,22 +83,23 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
             
             console.log('Gallery item:', item.url, 'isVideo:', actualIsVideo, 'isGif:', item.url?.toLowerCase().includes('.gif'));
 
+            const isDefinitelyVideo = item.type === "video";
             const url = item.url || "";
             const urlLower = url.toLowerCase().split("?")[0];
-            const isGif = url.toLowerCase().includes(".gif");
-            const isVideo = urlLower.endsWith(".mp4") || urlLower.endsWith(".webm");
+            const isGif = urlLower.includes(".gif") || urlLower.includes("/gif/");
+            const isVideo = urlLower.endsWith(".mp4") || urlLower.endsWith(".webm") || urlLower.includes("/video/");
             
             const mediaContent = item.url ? (
               <div className="relative h-full w-full">
-                {isVideo ? (
+                {isDefinitelyVideo && isGif ? (
+                  <div className="absolute inset-0 h-full w-full pointer-events-none">
+                    <GifThumbnail url={item.url} title={item.title} />
+                  </div>
+                ) : isDefinitelyVideo ? (
                   <video src={item.url} className="absolute inset-0 h-full w-full object-cover pointer-events-none" muted loop playsInline autoPlay />
                 ) : (
                   <div className="absolute inset-0 h-full w-full pointer-events-none">
-                    {isGif ? (
-                      <GifThumbnail url={item.url} title={item.title} />
-                    ) : (
-                      <Image src={item.url} alt={item.title} fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover" />
-                    )}
+                    <Image src={item.url} alt={item.title} fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover" />
                   </div>
                 )}
                 {item.type === "video" && (
@@ -142,7 +143,7 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
             >
               <X size={20} className="stroke-[3]" />
             </button>
-            {isVideoFormat(activeMedia.url) ? (
+            {activeMedia.type === "video" && !(activeMedia.url.toLowerCase().includes(".gif") || activeMedia.url.toLowerCase().includes("/gif/")) ? (
               <video 
                 ref={videoRef}
                 src={activeMedia.url} 
