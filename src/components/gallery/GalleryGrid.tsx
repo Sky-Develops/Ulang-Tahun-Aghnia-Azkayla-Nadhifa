@@ -14,6 +14,42 @@ const tileColors = [
   "bg-ocean-orange text-white",
 ];
 
+function GifThumbnail({ url, title }: { url: string; title: string }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <div className="grid h-full w-full place-items-center">
+        <PlayCircle size={24} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative h-full w-full">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/40 border-t-transparent" />
+        </div>
+      )}
+      <img 
+        src={url} 
+        alt={title}
+        loading="lazy"
+        decoding="async"
+        className={`h-full w-full object-cover transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        style={{ display: 'block', width: '100%', height: '100%', minHeight: '100%', minWidth: '100%' }}
+        onLoad={() => setIsLoading(false)}
+        onError={() => {
+          setIsLoading(false);
+          setHasError(true);
+        }}
+      />
+    </div>
+  );
+}
+
 export function GalleryGrid({ items }: { items: GalleryItem[] }) {
   const [activeMedia, setActiveMedia] = useState<{ url: string; type: GalleryItem["type"] } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -59,12 +95,7 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
                 ) : (
                   <div className="absolute inset-0 h-full w-full pointer-events-none">
                     {isGif ? (
-                      <img 
-                        src={item.url} 
-                        alt={item.title}
-                        className="h-full w-full object-cover"
-                        style={{ display: 'block', minHeight: '100%', minWidth: '100%' }}
-                      />
+                      <GifThumbnail url={item.url} title={item.title} />
                     ) : (
                       <Image src={item.url} alt={item.title} fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover" />
                     )}
