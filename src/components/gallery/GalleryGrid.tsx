@@ -45,14 +45,26 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
             const Icon = item.type === "photo" ? Camera : PlayCircle;
             const actualIsVideo = item.url ? isVideoFormat(item.url) : false;
             
+            console.log('Gallery item:', item.url, 'isVideo:', actualIsVideo, 'isGif:', item.url?.toLowerCase().includes('.gif'));
+
+            const url = item.url || "";
+            const urlLower = url.toLowerCase().split("?")[0];
+            const isGif = url.toLowerCase().includes(".gif");
+            const isVideo = urlLower.endsWith(".mp4") || urlLower.endsWith(".webm");
+            
             const mediaContent = item.url ? (
               <div className="relative h-full w-full">
-                {actualIsVideo ? (
+                {isVideo ? (
                   <video src={item.url} className="absolute inset-0 h-full w-full object-cover pointer-events-none" muted loop playsInline autoPlay />
                 ) : (
                   <div className="absolute inset-0 h-full w-full pointer-events-none">
-                    {item.url.split("?")[0].toLowerCase().endsWith(".gif") ? (
-                      <img src={item.url} alt={item.title} className="h-full w-full object-cover" />
+                    {isGif ? (
+                      <img 
+                        src={item.url} 
+                        alt={item.title}
+                        className="h-full w-full object-cover"
+                        style={{ display: 'block', minHeight: '100%', minWidth: '100%' }}
+                      />
                     ) : (
                       <Image src={item.url} alt={item.title} fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover" />
                     )}
