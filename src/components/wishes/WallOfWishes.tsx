@@ -12,7 +12,7 @@ export function WallOfWishes({ wishes, profilePhotoUrl }: { wishes: Wish[]; prof
   const sorted = [...wishes].sort((a, b) => {
     const pinnedDiff = Number(b.pinned) - Number(a.pinned);
     if (pinnedDiff !== 0) return pinnedDiff;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
   });
 
   return (
