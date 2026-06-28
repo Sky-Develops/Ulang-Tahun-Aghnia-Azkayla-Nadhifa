@@ -9,7 +9,11 @@ type SceneWish = {
 };
 
 export function WallOfWishes({ wishes, profilePhotoUrl }: { wishes: Wish[]; profilePhotoUrl?: string }) {
-  const sorted = [...wishes].sort((a, b) => Number(b.pinned) - Number(a.pinned));
+  const sorted = [...wishes].sort((a, b) => {
+    const pinnedDiff = Number(b.pinned) - Number(a.pinned);
+    if (pinnedDiff !== 0) return pinnedDiff;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   return (
     <section id="wishes" className="reference-ocean-section">
@@ -211,8 +215,10 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
     function syncSnails() {
       const floorY = ch - 28;
       snails = [];
-      const emitterCount = cw < 560 ? 5 : cw < 900 ? 6 : 7;
-      const wishCount = cw < 560 ? 2 : 3;
+      const baseEmitterCount = cw < 560 ? 5 : cw < 900 ? 6 : 7;
+      const maxWishCount = cw < 560 ? 6 : cw < 900 ? 10 : 14;
+      const wishCount = Math.min(sceneWishes.length, maxWishCount);
+      const emitterCount = Math.max(baseEmitterCount, wishCount);
       const sp = cw / (emitterCount + 1);
       for (let i = 0; i < emitterCount; i += 1) {
         const isWish = i < wishCount && i < sceneWishes.length;
@@ -237,6 +243,31 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
       }
     }
 
+    function pickWishX(wish: SceneWish) {
+      const msgLength = String(wish.message || "").trim().length;
+      const longMessage = msgLength >= 85;
+      const mediumMessage = msgLength >= 48;
+      const sidePadding = Math.max(42, cw * 0.12);
+      const centerMin = cw * (cw < 560 ? 0.32 : 0.35);
+      const centerMax = cw * (cw < 560 ? 0.68 : 0.65);
+
+      if (longMessage) {
+        return centerMin + Math.random() * (centerMax - centerMin);
+      }
+
+      if (mediumMessage && Math.random() < 0.72) {
+        return centerMin + Math.random() * (centerMax - centerMin);
+      }
+
+      const lanes = [
+        [sidePadding, cw * 0.28],
+        [cw * 0.36, cw * 0.64],
+        [cw * 0.72, cw - sidePadding],
+      ];
+      const lane = lanes[Math.floor(Math.random() * lanes.length)];
+      return lane[0] + Math.random() * Math.max(1, lane[1] - lane[0]);
+    }
+
     function drawSnails(c: CanvasRenderingContext2D) {
       snails.forEach((s) => {
         s.timer -= 1;
@@ -249,8 +280,8 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
           if (s.isWish) {
             const w = s.wishPool ? s.wishPool[s.poolIdx % s.wishPool.length] : s.wish;
             if (w) {
-              spawnWish(s.x, s.y - 12, w);
-              nextWishAt = Date.now() + 5000;
+              spawnWish(pickWishX(w), s.y - 12, w);
+              nextWishAt = Date.now() + (cw < 560 ? 1900 : cw < 900 ? 1500 : 1200);
             }
             if (s.wishPool) s.poolIdx += 1;
           } else {
@@ -263,7 +294,7 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
               ambBub.push(nb);
             }
           }
-          s.timer = s.isWish ? 210 + Math.random() * 260 : 150 + Math.random() * 220;
+          s.timer = s.isWish ? 150 + Math.random() * 210 : 150 + Math.random() * 220;
         }
         if (s.openT > 0) s.openT -= 1;
         c.save();
@@ -278,8 +309,9 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
     function spawnWish(x: number, y: number, wish: SceneWish) {
       const msg = String(wish.message || "").trim();
       if (!msg) return;
-      const fs = Math.max(7.5, Math.min(11, (msg.length < 30 ? 11 : 9.5) * Math.max(sceneScale, 0.78)));
-      const maxW = (msg.length < 20 ? 70 : msg.length < 50 ? 90 : 120) * Math.max(sceneScale, 0.72);
+      const longMessage = msg.length >= 85;
+      const fs = Math.max(6.8, Math.min(11, (msg.length < 30 ? 11 : longMessage ? 8.4 : 9.5) * Math.max(sceneScale, 0.78)));
+      const maxW = (msg.length < 20 ? 70 : msg.length < 50 ? 90 : longMessage ? 150 : 120) * Math.max(sceneScale, 0.72);
       ctxEl.font = `600 ${fs}px Inter,sans-serif`;
       const words = msg.split(" ");
       const lines: string[] = [];
@@ -299,8 +331,21 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
         27 * sceneScale,
         Math.max((lines.length * lh) / 1.6 + 10 * sceneScale, ctxEl.measureText(msg.slice(0, 20)).width / 1.4 + 12 * sceneScale),
       );
-      const maxR = cw < 560 ? 54 : cw < 900 ? 70 : 88;
-      const activeLimit = cw < 560 ? 3 : cw < 900 ? 4 : 5;
+      const maxR = longMessage
+        ? cw < 560
+          ? Math.min(82, cw * 0.24)
+          : cw < 900
+            ? 96
+            : 112
+        : cw < 560
+          ? 54
+          : cw < 900
+            ? 70
+            : 88;
+      const activeLimit = Math.max(
+        cw < 560 ? 6 : cw < 900 ? 10 : 14,
+        Math.min(sceneWishes.length, cw < 560 ? 8 : cw < 900 ? 12 : 18),
+      );
       if (wishBub.length >= activeLimit) wishBub.splice(0, wishBub.length - activeLimit + 1);
       wishBub.push({
         x,

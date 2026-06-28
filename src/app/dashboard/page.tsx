@@ -138,6 +138,48 @@ export default function DashboardPage() {
     }
   };
 
+  const removeGalleryItem = async (item: GalleryItem) => {
+    try {
+      await deleteGalleryItem(item.id);
+      setGallery((current) => current.filter((galleryItem) => galleryItem.id !== item.id));
+      setNotice(`${item.type === "photo" ? "Foto" : "Video"} "${item.title}" berhasil dihapus.`);
+    } catch (error: any) {
+      setNotice("Gagal menghapus media: " + (error?.message || "Kesalahan tidak diketahui"));
+    }
+  };
+
+  const removeWish = async (wish: Wish) => {
+    try {
+      await deleteWish(wish.id);
+      setWishes((current) => current.filter((item) => item.id !== wish.id));
+      setNotice(`Ucapan dari ${wish.name ?? "Tamu"} berhasil dihapus.`);
+    } catch (error: any) {
+      setNotice("Gagal menghapus ucapan: " + (error?.message || "Kesalahan tidak diketahui"));
+    }
+  };
+
+  const toggleWishApproval = async (wish: Wish) => {
+    const nextApproved = !wish.approved;
+    try {
+      await updateWish(wish.id, { approved: nextApproved });
+      setWishes((current) => current.map((item) => (item.id === wish.id ? { ...item, approved: nextApproved } : item)));
+      setNotice(nextApproved ? "Ucapan berhasil ditampilkan lagi." : "Ucapan berhasil disembunyikan.");
+    } catch (error: any) {
+      setNotice("Gagal mengubah status ucapan: " + (error?.message || "Kesalahan tidak diketahui"));
+    }
+  };
+
+  const toggleWishPin = async (wish: Wish) => {
+    const nextPinned = !wish.pinned;
+    try {
+      await updateWish(wish.id, { pinned: nextPinned });
+      setWishes((current) => current.map((item) => (item.id === wish.id ? { ...item, pinned: nextPinned } : item)));
+      setNotice(nextPinned ? "Ucapan berhasil dipin." : "Pin ucapan berhasil dilepas.");
+    } catch (error: any) {
+      setNotice("Gagal mengubah pin ucapan: " + (error?.message || "Kesalahan tidak diketahui"));
+    }
+  };
+
   return (
     <Shell>
       <div className="pb-10">
@@ -204,7 +246,7 @@ export default function DashboardPage() {
               {gallery.slice(0, galleryLimit).map((item) => (
                 <div key={item.id} className="flex items-center justify-between rounded-2xl bg-white/10 px-3 py-2 text-sm">
                   <span className="truncate">{item.type === "photo" ? "📷" : "🎥"} {item.title}</span>
-                  <button onClick={() => deleteGalleryItem(item.id)} className="text-ocean-coral" aria-label={`Hapus ${item.title}`}>
+                  <button type="button" onClick={() => removeGalleryItem(item)} className="text-ocean-coral" aria-label={`Hapus ${item.title}`}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -229,19 +271,21 @@ export default function DashboardPage() {
                       <p className="font-bold text-ocean-aqua">{wish.name ?? "Tamu"}</p>
                       <p className="text-white/75">{wish.message}</p>
                     </div>
-                    <button onClick={() => deleteWish(wish.id)} className="text-ocean-coral" aria-label={`Hapus ucapan ${wish.name ?? "Tamu"}`}>
+                    <button type="button" onClick={() => removeWish(wish)} className="text-ocean-coral" aria-label={`Hapus ucapan ${wish.name ?? "Tamu"}`}>
                       <Trash2 size={16} />
                     </button>
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     <button
-                      onClick={() => updateWish(wish.id, { approved: !wish.approved })}
+                      type="button"
+                      onClick={() => toggleWishApproval(wish)}
                       className="rounded-full bg-ocean-green/25 px-3 py-2 text-xs font-bold"
                     >
                       {wish.approved ? "Sembunyikan" : "Approve"}
                     </button>
                     <button
-                      onClick={() => updateWish(wish.id, { pinned: !wish.pinned })}
+                      type="button"
+                      onClick={() => toggleWishPin(wish)}
                       className="rounded-full bg-ocean-yellow/20 px-3 py-2 text-xs font-bold text-ocean-yellow"
                     >
                       {wish.pinned ? "Unpin" : "Pin"}
