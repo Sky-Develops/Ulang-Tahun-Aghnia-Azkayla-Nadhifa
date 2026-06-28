@@ -59,6 +59,8 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
     let t = 0;
     let sceneScale = 1;
     let nextWishAt = 0;
+    let nextWishIndex = 0;
+    let nextShortSide = 0;
     const surfaceY = 50;
     let fishes: any[] = [];
     let ambBub: any[] = [];
@@ -226,19 +228,8 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
           x: sp * (i + 1),
           y: floorY,
           isWish,
-          wish: isWish ? sceneWishes[i % sceneWishes.length] : null,
           timer: isWish ? 90 + i * 190 : 50 + Math.random() * 180 + i * 34,
           openT: 0,
-        });
-      }
-      if (sceneWishes.length > wishCount) {
-        let wi = 0;
-        snails.forEach((s) => {
-          if (s.isWish) {
-            s.wishPool = sceneWishes;
-            s.poolIdx = wi;
-            wi += 1;
-          }
         });
       }
     }
@@ -250,6 +241,8 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
       const sidePadding = Math.max(42, cw * 0.12);
       const centerMin = cw * (cw < 560 ? 0.32 : 0.35);
       const centerMax = cw * (cw < 560 ? 0.68 : 0.65);
+      const leftLane = [sidePadding, cw * 0.3];
+      const rightLane = [cw * 0.7, cw - sidePadding];
 
       if (longMessage) {
         return centerMin + Math.random() * (centerMax - centerMin);
@@ -259,13 +252,13 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
         return centerMin + Math.random() * (centerMax - centerMin);
       }
 
-      const lanes = [
-        [sidePadding, cw * 0.28],
-        [cw * 0.36, cw * 0.64],
-        [cw * 0.72, cw - sidePadding],
-      ];
-      const lane = lanes[Math.floor(Math.random() * lanes.length)];
+      const lane = nextShortSide % 2 === 0 ? leftLane : rightLane;
+      nextShortSide += 1;
       return lane[0] + Math.random() * Math.max(1, lane[1] - lane[0]);
+    }
+
+    function hasActiveWish(wishIndex: number) {
+      return wishBub.some((bubble) => bubble.wishIndex === wishIndex && bubble.op > 0.12);
     }
 
     function drawSnails(c: CanvasRenderingContext2D) {
@@ -278,12 +271,17 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
           }
           s.openT = 25;
           if (s.isWish) {
-            const w = s.wishPool ? s.wishPool[s.poolIdx % s.wishPool.length] : s.wish;
+            const wishIndex = nextWishIndex % sceneWishes.length;
+            if (hasActiveWish(wishIndex)) {
+              s.timer = 70 + Math.random() * 50;
+              return;
+            }
+            const w = sceneWishes[wishIndex];
             if (w) {
-              spawnWish(pickWishX(w), s.y - 12, w);
+              spawnWish(pickWishX(w), s.y - 12, w, wishIndex);
+              nextWishIndex = (nextWishIndex + 1) % sceneWishes.length;
               nextWishAt = Date.now() + (cw < 560 ? 1900 : cw < 900 ? 1500 : 1200);
             }
-            if (s.wishPool) s.poolIdx += 1;
           } else {
             for (let j = 0; j < 3; j += 1) {
               const nb = mkAmb();
@@ -306,7 +304,7 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
       });
     }
 
-    function spawnWish(x: number, y: number, wish: SceneWish) {
+    function spawnWish(x: number, y: number, wish: SceneWish, wishIndex: number) {
       const msg = String(wish.message || "").trim();
       if (!msg) return;
       const longMessage = msg.length >= 85;
@@ -360,6 +358,7 @@ function ReferenceOceanScene({ wishes, profilePhotoUrl }: { wishes: SceneWish[];
         op: 0,
         phase: "rise",
         msg,
+        wishIndex,
       });
     }
 
